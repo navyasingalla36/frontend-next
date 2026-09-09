@@ -52,6 +52,11 @@ export default function AppShell({
       href: "/hospital/updates",
       icon: ClipboardList,
     },
+    {
+      label: "Coordination",
+      href: "/hospital/coordination",
+      icon: Hospital,
+    },
   ];
 
   const shelterLinks = [
@@ -80,25 +85,23 @@ export default function AppShell({
   return (
     <div className="min-h-screen bg-[#081321] text-white">
       <div className="flex min-h-screen">
-
         {/* Desktop Sidebar */}
         <div className="hidden min-[1536px]:block">
           <Sidebar type={portal} />
         </div>
 
-        {/* Main Area */}
         <div className="flex min-w-0 flex-1 flex-col">
-
           {/* Top Navbar */}
           <TopNavbar title={title} />
 
           {/* Mobile / Tablet Navigation */}
           <div className="sticky top-[73px] z-30 border-b border-[#00B8E6]/25 bg-[#081321]/95 px-3 py-2 backdrop-blur-md min-[1536px]:hidden">
             <div className="flex gap-2 overflow-x-auto">
-
               {links.map((link) => {
                 const Icon = link.icon;
-                const isActive = pathname === link.href;
+
+                const isActive =
+                  pathname === link.href;
 
                 return (
                   <Link
@@ -122,7 +125,6 @@ export default function AppShell({
                   </Link>
                 );
               })}
-
             </div>
           </div>
 
@@ -132,7 +134,6 @@ export default function AppShell({
               {children}
             </div>
           </main>
-
         </div>
       </div>
     </div>

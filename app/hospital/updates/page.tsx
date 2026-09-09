@@ -2,151 +2,103 @@
 
 import { useEffect, useState } from "react";
 import {
-  Users,
-  UserPlus,
-  UserMinus,
+  Activity,
   Bed,
-  Clock,
-  Save,
+  CheckCircle2,
+  Clock3,
+  Package,
+  ShieldCheck,
+  UserPlus,
 } from "lucide-react";
 
 import AppShell from "@/components/AppShell";
 import GlassCard from "@/components/GlassCard";
-import NeonButton from "@/components/NeonButton";
 
 import hospitals from "@/data/hospitals.json";
 import hospitalStatus from "@/data/hospital-status.json";
+import patientUpdates from "@/data/patient-updates.json";
 
-interface HospitalUpdate {
-  patientsAdded: number;
-  patientsDischarged: number;
-  bedsAvailable: number;
-  lastUpdated: string;
+interface UpdateRecord {
+  type: string;
+  title: string;
+  description: string;
+  time: string;
 }
 
 export default function HospitalUpdatesPage() {
   const [hospitalId, setHospitalId] = useState("hosp-001");
 
-  const [patientsAdded, setPatientsAdded] = useState("");
-  const [patientsDischarged, setPatientsDischarged] = useState("");
-  const [bedsAvailable, setBedsAvailable] = useState("");
+  const [updates, setUpdates] = useState<UpdateRecord[]>([]);
 
-  const [message, setMessage] = useState("");
-
-  const [latestUpdate, setLatestUpdate] =
-    useState<HospitalUpdate | null>(null);
-
-  // Get logged-in hospital
   useEffect(() => {
-    const savedId = localStorage.getItem("hospitalId");
+    const storedId =
+      localStorage.getItem("hospitalId") || "hosp-001";
 
-    if (savedId) {
-      setHospitalId(savedId);
+    setHospitalId(storedId);
+
+    const hospitalUpdate =
+      patientUpdates.find(
+        (item) => item.hospital_id === storedId
+      ) || patientUpdates[0];
+
+    const storedCapacity = localStorage.getItem(
+      `hospitalCapacity_${storedId}`
+    );
+
+    const storedResources = localStorage.getItem(
+      `hospitalResources_${storedId}`
+    );
+
+    const generatedUpdates: UpdateRecord[] = [];
+
+    generatedUpdates.push({
+      type: "Patient Update",
+      title: `${hospitalUpdate.patients_added} patients added`,
+      description:
+        "Latest patient intake update recorded by the hospital.",
+      time: hospitalUpdate.last_updated,
+    });
+
+    generatedUpdates.push({
+      type: "Patient Update",
+      title: `${hospitalUpdate.patients_discharged} patients discharged`,
+      description:
+        "Latest patient discharge update recorded by the hospital.",
+      time: hospitalUpdate.last_updated,
+    });
+
+    if (storedCapacity) {
+      const capacity = JSON.parse(storedCapacity);
+
+      generatedUpdates.push({
+        type: "Capacity",
+        title: "Capacity updated",
+        description: `Available beds: ${capacity.availableBeds}. Emergency capacity: ${capacity.emergencyCapacity}. Readiness: ${capacity.readiness}.`,
+        time: capacity.updatedAt,
+      });
     }
+
+    if (storedResources) {
+      generatedUpdates.push({
+        type: "Resources",
+        title: "Resource inventory updated",
+        description:
+          "Emergency resource availability was updated by the hospital.",
+        time: new Date().toLocaleString(),
+      });
+    }
+
+    setUpdates(generatedUpdates);
   }, []);
 
-  const hospital = hospitals.find(
-    (item) => item.id === hospitalId
-  );
+  const hospital =
+    hospitals.find((item) => item.id === hospitalId) ||
+    hospitals[0];
 
-  const statusData = hospitalStatus.find(
-    (item) => item.hospital_id === hospitalId
-  );
-
-  // Load previously saved update
-  useEffect(() => {
-    if (!hospitalId) return;
-
-    const savedUpdate = localStorage.getItem(
-      `hospitalUpdate-${hospitalId}`
-    );
-
-    if (savedUpdate) {
-      try {
-        setLatestUpdate(JSON.parse(savedUpdate));
-      } catch {
-        setLatestUpdate(null);
-      }
-    }
-  }, [hospitalId]);
-
-  // Check hospital data before using it
-  if (!hospital || !statusData) {
-    return (
-      <AppShell
-        portal="hospital"
-        title="Hospital Updates"
-      >
-        <GlassCard>
-          <p className="text-[#FF4D4D]">
-            Hospital information not found.
-          </p>
-        </GlassCard>
-      </AppShell>
-    );
-  }
-
-  // From here onward TypeScript knows status exists
-  const status = statusData;
-
-  function handleSaveUpdate() {
-    const added = Number(patientsAdded) || 0;
-
-    const discharged =
-      Number(patientsDischarged) || 0;
-
-    const beds =
-      bedsAvailable === ""
-        ? status.available_beds
-        : Number(bedsAvailable);
-
-    // Validate values
-    if (added < 0 || discharged < 0 || beds < 0) {
-      setMessage(
-        "Please enter valid positive values."
-      );
-      return;
-    }
-
-    // Beds cannot exceed total beds
-    if (beds > status.total_beds) {
-      setMessage(
-        `Available beds cannot exceed ${status.total_beds}.`
-      );
-      return;
-    }
-
-    const update: HospitalUpdate = {
-      patientsAdded: added,
-      patientsDischarged: discharged,
-      bedsAvailable: beds,
-      lastUpdated: new Date().toLocaleString(
-        "en-IN",
-        {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }
-      ),
-    };
-
-    // Save mock update locally
-    localStorage.setItem(
-      `hospitalUpdate-${hospitalId}`,
-      JSON.stringify(update)
-    );
-
-    // Display latest update
-    setLatestUpdate(update);
-
-    setMessage(
-      "Hospital update saved successfully."
-    );
-
-    // Clear form
-    setPatientsAdded("");
-    setPatientsDischarged("");
-    setBedsAvailable("");
-  }
+  const status =
+    hospitalStatus.find(
+      (item) => item.hospital_id === hospitalId
+    ) || hospitalStatus[0];
 
   return (
     <AppShell
@@ -155,305 +107,194 @@ export default function HospitalUpdatesPage() {
     >
       <div className="space-y-6">
 
-        {/* =========================
-            HEADER
-        ========================= */}
-        <GlassCard>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#00D4FF]">
-            Operational Updates
+        {/* HEADER */}
+        <div>
+          <p className="text-xs font-bold tracking-[0.2em] text-[#00D4FF]">
+            HOSPITAL OPERATIONS
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-white">
-            {hospital.hospital_name}
-          </h2>
+          <h1 className="mt-2 text-2xl font-bold md:text-3xl">
+            Update History
+          </h1>
 
           <p className="mt-1 text-sm text-slate-400">
-            Update current emergency hospital conditions.
+            Operational updates recorded for{" "}
+            {hospital.hospital_name}.
           </p>
-        </GlassCard>
+        </div>
 
-        {/* =========================
-            UPDATE FORM
-        ========================= */}
-        <GlassCard>
-
-          <div className="flex items-center gap-3">
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#00B8E6]/30 bg-[#00D4FF]/10 text-[#00D4FF]">
-              <Users size={22} />
-            </div>
+        {/* CURRENT STATUS */}
+        <GlassCard className="p-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
             <div>
-              <h3 className="text-lg font-semibold text-white">
-                Submit Hospital Update
-              </h3>
+              <p className="text-xs font-bold tracking-[0.15em] text-slate-500">
+                CURRENT STATUS
+              </p>
 
-              <p className="text-sm text-slate-400">
-                Enter the latest patient and bed information.
+              <h2 className="mt-1 text-xl font-bold">
+                {hospital.hospital_name}
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-400">
+                {hospital.district} District
               </p>
             </div>
 
-          </div>
-
-          {/* INPUT FIELDS */}
-          <div className="mt-6 grid gap-5 sm:grid-cols-3">
-
-            <InputField
-              label="Patients Added"
-              icon={<UserPlus size={18} />}
-              value={patientsAdded}
-              onChange={setPatientsAdded}
-              placeholder="0"
-            />
-
-            <InputField
-              label="Patients Discharged"
-              icon={<UserMinus size={18} />}
-              value={patientsDischarged}
-              onChange={setPatientsDischarged}
-              placeholder="0"
-            />
-
-            <InputField
-              label="Beds Available"
-              icon={<Bed size={18} />}
-              value={bedsAvailable}
-              onChange={setBedsAvailable}
-              placeholder={String(status.available_beds)}
-            />
-
-          </div>
-
-          {/* CURRENT VALUES */}
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-
-            <CurrentValue
-              label="Current Beds"
-              value={status.available_beds}
-            />
-
-            <CurrentValue
-              label="Emergency Capacity"
-              value={status.emergency_capacity}
-            />
-
-            <CurrentValue
-              label="Total Beds"
-              value={status.total_beds}
-            />
-
-          </div>
-
-          {/* SAVE BUTTON */}
-          <div className="mt-6">
-
-            <NeonButton
-              onClick={handleSaveUpdate}
-              className="w-full sm:w-auto"
-            >
-              <Save
-                size={17}
-                className="mr-2"
-              />
-              Save Update
-            </NeonButton>
-
-          </div>
-
-          {/* MESSAGE */}
-          {message && (
-            <div className="mt-4 rounded-xl border border-[#00B8E6]/30 bg-[#00D4FF]/5 px-4 py-3">
-
-              <p className="text-sm text-[#00D4FF]">
-                {message}
-              </p>
-
+            <div className="flex items-center gap-2 rounded-full border border-[#2ECC71]/40 bg-[#2ECC71]/10 px-4 py-2 text-sm font-semibold text-[#2ECC71]">
+              <ShieldCheck size={17} />
+              {status.readiness_status}
             </div>
-          )}
 
+          </div>
         </GlassCard>
 
-        {/* =========================
-            LATEST UPDATE
-        ========================= */}
-        <GlassCard>
+        {/* UPDATE TIMELINE */}
+        <section>
+          <div className="mb-3">
+            <p className="text-xs font-bold tracking-[0.15em] text-slate-500">
+              OPERATIONAL TIMELINE
+            </p>
 
-          <div className="flex items-center justify-between">
-
-            <div className="flex items-center gap-3">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#00B8E6]/30 bg-[#00D4FF]/10 text-[#00D4FF]">
-                <Clock size={22} />
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-white">
-                  Latest Update
-                </h3>
-
-                <p className="text-sm text-slate-400">
-                  Most recent information submitted by the hospital.
-                </p>
-              </div>
-
-            </div>
-
+            <h2 className="mt-1 text-lg font-bold">
+              Recent updates
+            </h2>
           </div>
 
-          {latestUpdate ? (
+          <div className="space-y-4">
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            {updates.map((update, index) => (
+              <GlassCard
+                key={`${update.type}-${index}`}
+                className="p-5"
+              >
+                <div className="flex gap-4">
 
-              <UpdateValue
-                label="Patients Added"
-                value={latestUpdate.patientsAdded}
-              />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00D4FF]/10 text-[#00D4FF]">
 
-              <UpdateValue
-                label="Patients Discharged"
-                value={latestUpdate.patientsDischarged}
-              />
+                    {update.type === "Capacity" ? (
+                      <Bed size={20} />
+                    ) : update.type === "Resources" ? (
+                      <Package size={20} />
+                    ) : (
+                      <UserPlus size={20} />
+                    )}
 
-              <UpdateValue
-                label="Beds Available"
-                value={latestUpdate.bedsAvailable}
-              />
+                  </div>
 
-              {/* LAST UPDATED */}
-              <div className="sm:col-span-3">
+                  <div className="min-w-0 flex-1">
 
-                <div className="rounded-xl border border-[#00B8E6]/20 bg-[#081321]/60 p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 
-                  <p className="text-xs uppercase tracking-wider text-slate-500">
-                    Last Updated
-                  </p>
+                      <div>
+                        <p className="text-[10px] font-bold tracking-[0.15em] text-[#00D4FF]">
+                          {update.type.toUpperCase()}
+                        </p>
 
-                  <p className="mt-1 text-sm font-semibold text-white">
-                    {latestUpdate.lastUpdated}
-                  </p>
+                        <h3 className="mt-1 font-bold">
+                          {update.title}
+                        </h3>
+                      </div>
 
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Clock3 size={13} />
+                        {update.time}
+                      </div>
+
+                    </div>
+
+                    <p className="mt-2 text-sm text-slate-400">
+                      {update.description}
+                    </p>
+
+                  </div>
                 </div>
+              </GlassCard>
+            ))}
 
-              </div>
+          </div>
+        </section>
 
-            </div>
+        {/* UPDATE TYPES */}
+        <section>
+          <p className="mb-3 text-xs font-bold tracking-[0.15em] text-slate-500">
+            TRACKED OPERATIONS
+          </p>
 
-          ) : (
+          <div className="grid gap-4 sm:grid-cols-3">
 
-            <div className="mt-5 rounded-xl border border-dashed border-[#00B8E6]/20 bg-[#081321]/40 p-6 text-center">
+            <GlassCard className="p-5">
+              <UserPlus
+                size={21}
+                className="text-[#00D4FF]"
+              />
 
-              <p className="text-sm text-slate-400">
-                No manual update has been submitted yet.
+              <h3 className="mt-4 font-bold">
+                Patient Updates
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Patients added and discharged.
+              </p>
+            </GlassCard>
+
+            <GlassCard className="p-5">
+              <Bed
+                size={21}
+                className="text-[#00D4FF]"
+              />
+
+              <h3 className="mt-4 font-bold">
+                Capacity Updates
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Bed and emergency capacity changes.
+              </p>
+            </GlassCard>
+
+            <GlassCard className="p-5">
+              <Package
+                size={21}
+                className="text-[#00D4FF]"
+              />
+
+              <h3 className="mt-4 font-bold">
+                Resource Updates
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Emergency resource inventory changes.
+              </p>
+            </GlassCard>
+
+          </div>
+        </section>
+
+        {/* PROTOTYPE NOTE */}
+        <GlassCard className="p-5">
+          <div className="flex gap-3">
+            <CheckCircle2
+              size={20}
+              className="mt-0.5 shrink-0 text-[#2ECC71]"
+            />
+
+            <div>
+              <p className="font-semibold">
+                Prototype update history
               </p>
 
-              <p className="mt-1 text-xs text-slate-600">
-                Submit an update above to display the latest hospital information.
+              <p className="mt-1 text-sm text-slate-400">
+                Updates are currently stored locally for prototype
+                demonstration. In the integrated system, these events
+                will be synchronized with the central disaster
+                management platform.
               </p>
-
             </div>
-
-          )}
-
+          </div>
         </GlassCard>
 
       </div>
     </AppShell>
-  );
-}
-
-/* =========================
-   INPUT FIELD
-========================= */
-
-function InputField({
-  label,
-  icon,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-}) {
-  return (
-    <div>
-
-      <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-300">
-
-        <span className="text-[#00D4FF]">
-          {icon}
-        </span>
-
-        {label}
-
-      </label>
-
-      <input
-        type="number"
-        min="0"
-        value={value}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
-        placeholder={placeholder}
-        className="w-full rounded-xl border border-[#00B8E6]/30 bg-[#081321] px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF]/30"
-      />
-
-    </div>
-  );
-}
-
-/* =========================
-   CURRENT VALUE
-========================= */
-
-function CurrentValue({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="rounded-xl border border-[#00B8E6]/20 bg-[#081321]/50 p-3">
-
-      <p className="text-xs text-slate-500">
-        {label}
-      </p>
-
-      <p className="mt-1 text-lg font-bold text-white">
-        {value}
-      </p>
-
-    </div>
-  );
-}
-
-/* =========================
-   UPDATE VALUE
-========================= */
-
-function UpdateValue({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="rounded-xl border border-[#00B8E6]/20 bg-[#081321]/60 p-4">
-
-      <p className="text-xs uppercase tracking-wider text-slate-500">
-        {label}
-      </p>
-
-      <p className="mt-2 text-2xl font-bold text-white">
-        {value}
-      </p>
-
-    </div>
   );
 }
