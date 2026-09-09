@@ -1,0 +1,29 @@
+[
+  {
+    "hospital_id": "hosp-001",
+    "resources": {
+      "oxygen": 82,
+      "ventilators": 7,
+      "medical_kits": 85,
+      "blood_units": 34
+    }
+  },
+  {
+    "hospital_id": "hosp-002",
+    "resources": {
+      "oxygen": 64,
+      "ventilators": 4,
+      "medical_kits": 52,
+      "blood_units": 21
+    }
+  },
+  {
+    "hospital_id": "hosp-003",
+    "resources": {
+      "oxygen": 91,
+      "ventilators": 6,
+      "medical_kits": 71,
+      "blood_units": 28
+    }
+  }
+]

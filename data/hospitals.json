@@ -1,0 +1,23 @@
+[
+  {
+    "id": "hosp-001",
+    "hospital_name": "Government General Hospital",
+    "district": "NTR",
+    "available_beds": 42,
+    "emergency_capacity": 18
+  },
+  {
+    "id": "hosp-002",
+    "hospital_name": "Vijayawada Area Hospital",
+    "district": "NTR",
+    "available_beds": 28,
+    "emergency_capacity": 12
+  },
+  {
+    "id": "hosp-003",
+    "hospital_name": "Mylavaram Area Hospital",
+    "district": "NTR",
+    "available_beds": 31,
+    "emergency_capacity": 10
+  }
+]

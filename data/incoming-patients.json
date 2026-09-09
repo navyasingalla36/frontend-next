@@ -1,0 +1,20 @@
+[
+  {
+    "location": "Benz Circle",
+    "patients": 8,
+    "eta": "8 min",
+    "severity": "High"
+  },
+  {
+    "location": "Vijayawada",
+    "patients": 12,
+    "eta": "12 min",
+    "severity": "Moderate"
+  },
+  {
+    "location": "Mylavaram",
+    "patients": 10,
+    "eta": "24 min",
+    "severity": "Moderate"
+  }
+]

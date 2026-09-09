@@ -1,0 +1,29 @@
+[
+  {
+    "hospital_id": "hosp-001",
+    "total_beds": 120,
+    "available_beds": 42,
+    "occupied_beds": 78,
+    "icu_beds": 18,
+    "emergency_capacity": 18,
+    "readiness_status": "Ready"
+  },
+  {
+    "hospital_id": "hosp-002",
+    "total_beds": 100,
+    "available_beds": 28,
+    "occupied_beds": 72,
+    "icu_beds": 14,
+    "emergency_capacity": 12,
+    "readiness_status": "Warning"
+  },
+  {
+    "hospital_id": "hosp-003",
+    "total_beds": 80,
+    "available_beds": 31,
+    "occupied_beds": 49,
+    "icu_beds": 10,
+    "emergency_capacity": 10,
+    "readiness_status": "Ready"
+  }
+]

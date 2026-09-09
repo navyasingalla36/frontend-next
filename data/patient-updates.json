@@ -1,0 +1,20 @@
+[
+  {
+    "hospital_id": "hosp-001",
+    "patients_added": 0,
+    "patients_discharged": 0,
+    "last_updated": "09 Sep 2026, 06:00 PM"
+  },
+  {
+    "hospital_id": "hosp-002",
+    "patients_added": 0,
+    "patients_discharged": 0,
+    "last_updated": "09 Sep 2026, 06:00 PM"
+  },
+  {
+    "hospital_id": "hosp-003",
+    "patients_added": 0,
+    "patients_discharged": 0,
+    "last_updated": "09 Sep 2026, 06:00 PM"
+  }
+]
